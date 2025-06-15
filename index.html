@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>음성 녹음기</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎤</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .record-button {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            font-size: 4em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            box-shadow: 0 15px 35px rgba(255, 107, 107, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .record-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.6s ease;
+        }
+
+        .record-button:hover:not(:disabled)::before {
+            width: 100%;
+            height: 100%;
+        }
+
+        .record-button:hover:not(:disabled) {
+            transform: translateY(-8px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(255, 107, 107, 0.5);
+        }
+
+        .record-button.recording {
+            background: linear-gradient(45deg, #ff4757, #ff3838);
+            animation: recordPulse 2s infinite ease-in-out;
+        }
+
+        .record-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @keyframes recordPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 15px 35px rgba(255, 71, 87, 0.4);
+            }
+            50% { 
+                transform: scale(1.08);
+                box-shadow: 0 20px 45px rgba(255, 71, 87, 0.6);
+            }
+        }
+
+        .status {
+            margin: 25px 0;
+            font-size: 1.3em;
+            color: #555;
+            min-height: 35px;
+            font-weight: 500;
+        }
+
+        .status.recording {
+            color: #ff4757;
+            font-weight: 700;
+            animation: statusBlink 2s infinite;
+        }
+
+        @keyframes statusBlink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.7; }
+        }
+
+        .timer {
+            font-size: 3em;
+            color: #333;
+            margin: 25px 0;
+            font-weight: 700;
+            font-family: 'Courier New', monospace;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .controls {
+            margin: 35px 0;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s ease;
+        }
+
+        .control-btn:hover:not(:disabled)::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .control-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .download-btn {
+            background: linear-gradient(45deg, #2ed573, #7bed9f);
+            color: white;
+            border: none;
+            padding: 18px 35px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin: 25px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(46, 213, 115, 0.3);
+            display: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .download-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.5s ease;
+        }
+
+        .download-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(46, 213, 115, 0.4);
+        }
+
+        .audio-player {
+            margin: 25px 0;
+            width: 100%;
+            display: none;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .waveform {
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(90deg, #f8f9fa, #e9ecef);
+            border-radius: 40px;
+            margin: 25px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .wave-bars {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 3px;
+        }
+
+        .wave-bar {
+            width: 4px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 2px;
+            transition: height 0.1s ease;
+            height: 6px;
+            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+        }
+
+        .notification {
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            display: none;
+            font-weight: 500;
+        }
+
+        .permission-notice {
+            background: linear-gradient(45deg, rgba(255, 193, 7, 0.1), rgba(255, 235, 59, 0.1));
+            border: 1px solid #ffc107;
+            color: #856404;
+        }
+
+        .error-message {
+            background: linear-gradient(45deg, rgba(220, 53, 69, 0.1), rgba(244, 67, 54, 0.1));
+            border: 1px solid #dc3545;
+            color: #721c24;
+        }
+
+        .success-message {
+            background: linear-gradient(45deg, rgba(40, 167, 69, 0.1), rgba(76, 175, 80, 0.1));
+            border: 1px solid #28a745;
+            color: #155724;
+        }
+
+        .help-section {
+            background: linear-gradient(45deg, rgba(23, 162, 184, 0.05), rgba(33, 150, 243, 0.05));
+            border: 1px solid #17a2b8;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            color: #0c5460;
+            text-align: left;
+        }
+
+        .help-section h4 {
+            color: #17a2b8;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .help-section ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .help-section li {
+            margin: 8px 0;
+            position: relative;
+        }
+
+        .help-section li::marker {
+            color: #17a2b8;
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .record-button {
+                width: 120px;
+                height: 120px;
+                font-size: 3em;
+            }
+            
+            .timer {
+                font-size: 2.5em;
+            }
+            
+            .controls {
+                gap: 10px;
+            }
+            
+            .control-btn {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 음성 녹음기</h1>
+        
+        <div class="notification permission-notice" id="permissionNotice">
+            <strong>🔐 마이크 권한 필요</strong><br>
+            브라우저에서 마이크 사용을 허용해주세요.
+        </div>
+        
+        <div class="notification error-message" id="errorMessage"></div>
+        <div class="notification success-message" id="successMessage"></div>
+        
+        <button class="record-button" id="recordBtn">
+            🎤
+        </button>
+        
+        <div class="status" id="status">🎯 녹음 시작하려면 위 버튼을 클릭하세요</div>
+        
+        <div class="timer" id="timer">00:00</div>
+        
+        <div class="waveform">
+            <div class="wave-bars" id="waveBars"></div>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn" id="pauseBtn" disabled>⏸️ 일시정지</button>
+            <button class="control-btn" id="stopBtn" disabled>⏹️ 정지</button>
+            <button class="control-btn" id="clearBtn" disabled>🗑️ 초기화</button>
+        </div>
+        
+        <audio class="audio-player" id="audioPlayer" controls></audio>
+        
+        <button class="download-btn" id="downloadBtn">
+            📥 음성 파일 다운로드
+        </button>
+
+        <div class="help-section">
+            <h4>🎯 사용 방법</h4>
+            <ul>
+                <li><strong>녹음 시작:</strong> 🎤 버튼 클릭</li>
+                <li><strong>일시정지:</strong> ⏸️ 버튼으로 잠시 멈춤</li>
+                <li><strong>녹음 종료:</strong> ⏹️ 버튼 또는 🎤 버튼 다시 클릭</li>
+                <li><strong>재생:</strong> 녹음 완료 후 플레이어에서 재생</li>
+                <li><strong>저장:</strong> 📥 버튼으로 파일 다운로드</li>
+            </ul>
+            
+            <h4>💡 팁</h4>
+            <ul>
+                <li>조용한 환경에서 녹음하면 더 좋은 품질</li>
+                <li>마이크와 적당한 거리 유지 (15-30cm)</li>
+                <li>Chrome, Firefox, Safari 브라우저 권장</li>
+                <li>모바일에서도 완벽하게 작동</li>
+            </ul>
+        </div>
+
+        <div class="footer">
+            🌟 무료 음성 녹음 서비스 | GitHub Pages로 호스팅
+        </div>
+    </div>
+
+    <script>
+        class VoiceRecorder {
+            constructor() {
+                this.mediaRecorder = null;
+                this.audioChunks = [];
+                this.isRecording = false;
+                this.isPaused = false;
+                this.stream = null;
+                this.audioContext = null;
+                this.analyser = null;
+                this.startTime = 0;
+                this.pausedDuration = 0;
+                this.pauseStartTime = 0;
+                this.timerInterval = null;
+                this.animationId = null;
+                
+                this.initializeElements();
+                this.setupEventListeners();
+                this.createWaveformBars();
+                this.checkBrowserSupport();
+            }
+            
+            initializeElements() {
+                this.recordBtn = document.getElementById('recordBtn');
+                this.status = document.getElementById('status');
+                this.timer = document.getElementById('timer');
+                this.pauseBtn = document.getElementById('pauseBtn');
+                this.stopBtn = document.getElementById('stopBtn');
+                this.clearBtn = document.getElementById('clearBtn');
+                this.audioPlayer = document.getElementById('audioPlayer');
+                this.downloadBtn = document.getElementById('downloadBtn');
+                this.permissionNotice = document.getElementById('permissionNotice');
+                this.errorMessage = document.getElementById('errorMessage');
+                this.successMessage = document.getElementById('successMessage');
+                this.waveBars = document.getElementById('waveBars');
+            }
+            
+            setupEventListeners() {
+                this.recordBtn.addEventListener('click', () => this.toggleRecording());
+                this.pauseBtn.addEventListener('click', () => this.togglePause());
+                this.stopBtn.addEventListener('click', () => this.stopRecording());
+                this.clearBtn.addEventListener('click', () => this.clearRecording());
+                this.downloadBtn.addEventListener('click', () => this.downloadRecording());
+            }
+            
+            createWaveformBars() {
+                for (let i = 0; i < 40; i++) {
+                    const bar = document.createElement('div');
+                    bar.className = 'wave-bar';
+                    this.waveBars.appendChild(bar);
+                }
+            }
+            
+            checkBrowserSupport() {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    this.showError('❌ 이 브라우저는 음성 녹음을 지원하지 않습니다. Chrome, Firefox, Safari를 사용해주세요.');
+                    this.recordBtn.disabled = true;
+                    return;
+                }
+                
+                if (!window.isSecureContext) {
+                    this.showError('🔒 HTTPS 환경이 필요합니다. 보안 연결에서만 마이크를 사용할 수 있습니다.');
+                    return;
+                }
+                
+                this.status.textContent = '✅ 준비 완료! 녹음을 시작하세요';
+            }
+            
+            async toggleRecording() {
+                if (!this.isRecording) {
+                    await this.startRecording();
+                } else {
+                    this.stopRecording();
+                }
+            }
+            
+            async startRecording() {
+                try {
+                    this.hideAllMessages();
+                    this.permissionNotice.style.display = 'block';
+                    this.recordBtn.disabled = true;
+                    this.recordBtn.innerHTML = '<div class="loading"></div>';
+
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true,
+                            sampleRate: 44100,
+                            channelCount: 1
+                        }
+                    });
+
+                    this.stream = stream;
+                    this.permissionNotice.style.display = 'none';
+                    this.setupAudioAnalysis();
+
+                    const mimeType = this.getSupportedMimeType();
+                    const options = mimeType ? { mimeType } : {};
+                    
+                    this.mediaRecorder = new MediaRecorder(stream, options);
+                    this.audioChunks = [];
+
+                    this.mediaRecorder.ondataavailable = (event) => {
+                        if (event.data.size > 0) {
+                            this.audioChunks.push(event.data);
+                        }
+                    };
+
+                    this.mediaRecorder.onstop = () => {
+                        this.processRecording();
+                    };
+
+                    this.mediaRecorder.onerror = (event) => {
+                        this.showError('🔴 녹음 중 오류가 발생했습니다: ' + event.error);
+                        this.resetRecording();
+                    };
+
+                    this.mediaRecorder.start(1000);
+                    this.isRecording = true;
+                    this.isPaused = false;
+                    this.startTime = Date.now();
+                    this.pausedDuration = 0;
+
+                    this.updateUI();
+                    this.startTimer();
+                    this.startWaveformAnimation();
+                    this.showSuccess('🎤 녹음이 시작되었습니다!');
+
+                } catch (error) {
+                    this.handleRecordingError(error);
+                } finally {
+                    this.recordBtn.disabled = false;
+                    this.recordBtn.textContent = this.isRecording ? '⏹️' : '🎤';
+                }
+            }
+            
+            setupAudioAnalysis() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.analyser = this.audioContext.createAnalyser();
+                    const source = this.audioContext.createMediaStreamSource(this.stream);
+                    source.connect(this.analyser);
+                    this.analyser.fftSize = 256;
+                    this.analyser.smoothingTimeConstant = 0.8;
+                } catch (error) {
+                    console.warn('오디오 분석 설정 실패:', error);
+                }
+            }
+            
+            getSupportedMimeType() {
+                const types = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/wav'];
+                return types.find(type => MediaRecorder.isTypeSupported(type)) || '';
+            }
+            
+            handleRecordingError(error) {
+                this.permissionNotice.style.display = 'none';
+                
+                let message = '';
+                switch (error.name) {
+                    case 'NotAllowedError':
+                        message = '🚫 마이크 접근이 거부되었습니다. 브라우저 설정에서 마이크 권한을 허용해주세요.';
+                        break;
+                    case 'NotFoundError':
+                        message = '🎤 마이크를 찾을 수 없습니다. 마이크가 연결되어 있는지 확인해주세요.';
+                        break;
+                    case 'NotReadableError':
+                        message = '⚠️ 마이크에 접근할 수 없습니다. 다른 프로그램에서 사용 중일 수 있습니다.';
+                        break;
+                    case 'SecurityError':
+                        message = '🔒 보안 제한으로 마이크에 접근할 수 없습니다. HTTPS 환경에서 사용해주세요.';
+                        break;
+                    default:
+                        message = `❌ 마이크 접근 실패: ${error.message}`;
+                }
+                
+                this.showError(message);
+            }
+            
+            togglePause() {
+                if (!this.mediaRecorder || !this.isRecording) return;
+                
+                if (!this.isPaused) {
+                    this.mediaRecorder.pause();
+                    this.isPaused = true;
+                    this.pauseStartTime = Date.now();
+                    this.pauseBtn.textContent = '▶️ 재개';
+                    this.status.textContent = '⏸️ 녹음 일시정지됨';
+                    this.stopTimer();
+                    this.stopWaveformAnimation();
+                } else {
+                    this.mediaRecorder.resume();
+                    this.isPaused = false;
+                    this.pausedDuration += Date.now() - this.pauseStartTime;
+                    this.pauseBtn.textContent = '⏸️ 일시정지';
+                    this.status.textContent = '🎙️ 녹음 중...';
+                    this.startTimer();
+                    this.startWaveformAnimation();
+                }
+            }
+            
+            stopRecording() {
+                if (this.mediaRecorder && this.isRecording) {
+                    this.mediaRecorder.stop();
+                    this.isRecording = false;
+                    this.isPaused = false;
+
+                    if (this.stream) {
+                        this.stream.getTracks().forEach(track => track.stop());
+                    }
+
+                    this.stopTimer();
+                    this.stopWaveformAnimation();
+                    this.updateUI();
+                }
+            }
+            
+            resetRecording() {
+                this.isRecording = false;
+                this.isPaused = false;
+                
+                if (this.stream) {
+                    this.stream.getTracks().forEach(track => track.stop());
+                }
+                
+                this.stopTimer();
+                this.stopWaveformAnimation();
+                this.updateUI();
+            }
+            
+            processRecording() {
+                if (this.audioChunks.length === 0) {
+                    this.showError('📭 녹음된 데이터가 없습니다.');
+                    return;
+                }
+
+                try {
+                    const mimeType = this.audioChunks[0].type || 'audio/webm';
+                    const audioBlob = new Blob(this.audioChunks, { type: mimeType });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+
+                    this.audioPlayer.src = audioUrl;
+                    this.audioPlayer.style.display = 'block';
+                    this.downloadBtn.style.display = 'block';
+                    this.clearBtn.disabled = false;
+
+                    this.showSuccess('✅ 녹음이 완료되었습니다! 재생하거나 다운로드하세요.');
+                    this.status.textContent = '🎉 녹음 완료!';
+
+                } catch (error) {
+                    this.showError('⚠️ 녹음 처리 중 오류가 발생했습니다: ' + error.message);
+                }
+            }
+            
+            clearRecording() {
+                this.audioChunks = [];
+                this.audioPlayer.src = '';
+                this.audioPlayer.style.display = 'none';
+                this.downloadBtn.style.display = 'none';
+                this.timer.textContent = '00:00';
+                this.status.textContent = '🎯 새로운 녹음을 시작하세요';
+                this.clearBtn.disabled = true;
+                this.hideAllMessages();
+                
+                const bars = this.waveBars.querySelectorAll('.wave-bar');
+                bars.forEach(bar => {
+                    bar.style.height = '6px';
+                });
+            }
+            
+            downloadRecording() {
+                if (this.audioChunks.length === 0) {
+                    this.showError('📭 다운로드할 녹음 파일이 없습니다.');
+                    return;
+                }
+
+                try {
+                    const mimeType = this.audioChunks[0].type || 'audio/webm';
+                    const audioBlob = new Blob(this.audioChunks, { type: mimeType });
+                    const url = URL.createObjectURL(audioBlob);
+                    const a = document.createElement('a');
+                    
+                    const now = new Date();
+                    const dateStr = now.getFullYear() + 
+                        (now.getMonth() + 1).toString().padStart(2, '0') + 
+                        now.getDate().toString().padStart(2, '0') + '_' +
+                        now.getHours().toString().padStart(2, '0') + 
+                        now.getMinutes().toString().padStart(2, '0');
+                    
+                    const extension = mimeType.includes('webm') ? 'webm' : 
+                                    mimeType.includes('mp4') ? 'mp4
