@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>음성 녹음기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        
+        .record-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            color: white;
+            font-size: 3em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px auto;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .record-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(255, 107, 107, 0.4);
+        }
+        
+        .record-button.recording {
+            background: linear-gradient(45deg, #ff4757, #ff3838);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .status {
+            margin: 20px 0;
+            font-size: 1.2em;
+            color: #666;
+            min-height: 30px;
+        }
+        
+        .status.recording {
+            color: #ff4757;
+            font-weight: bold;
+        }
+        
+        .timer {
+            font-size: 2.5em;
+            color: #333;
+            margin: 20px 0;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .controls {
+            margin: 30px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .control-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .download-btn {
+            background: linear-gradient(45deg, #2ed573, #7bed9f);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(46, 213, 115, 0.3);
+            display: none;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(46, 213, 115, 0.4);
+        }
+        
+        .audio-player {
+            margin: 20px 0;
+            width: 100%;
+            display: none;
+        }
+        
+        .error-message {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid #dc3545;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #721c24;
+            display: none;
+        }
+        
+        .success-message {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid #28a745;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #155724;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 음성 녹음기</h1>
+        
+        <div class="error-message" id="errorMessage"></div>
+        <div class="success-message" id="successMessage"></div>
+        
+        <button class="record-button" id="recordBtn">
+            🎤
+        </button>
+        
+        <div class="status" id="status">녹음 시작하려면 버튼을 클릭하세요</div>
+        
+        <div class="timer" id="timer">00:00</div>
+        
+        <div class="controls">
+            <button class="control-btn" id="stopBtn" disabled>정지</button>
+            <button class="control-btn" id="clearBtn" disabled>초기화</button>
+        </div>
+        
+        <audio class="audio-player" id="audioPlayer" controls></audio>
+        
+        <button class="download-btn" id="downloadBtn">
+            📥 음성 파일 다운로드
+        </button>
+    </div>
+
+    <script>
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let startTime = 0;
+        let timerInterval = null;
+
+        // DOM 요소들
+        const recordBtn = document.getElementById('recordBtn');
+        const status = document.getElementById('status');
+        const timer = document.getElementById('timer');
+        const stopBtn = document.getElementById('stopBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+
+        // 이벤트 리스너 설정
+        recordBtn.addEventListener('click', toggleRecording);
+        stopBtn.addEventListener('click', stopRecording);
+        clearBtn.addEventListener('click', clearRecording);
+        downloadBtn.addEventListener('click', downloadRecording);
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+        }
+
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        function hideMessages() {
+            errorMessage.style.display = 'none';
+            successMessage.style.display = 'none';
+        }
+
+        function updateTimer() {
+            if (isRecording) {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        async function toggleRecording() {
+            if (!isRecording) {
+                await startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        async function startRecording() {
+            try {
+                hideMessages();
+
+                // 마이크 접근 요청
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true
+                    }
+                });
+
+                // MediaRecorder 설정
+                const options = {};
+                if (MediaRecorder.isTypeSupported('audio/webm')) {
+                    options.mimeType = 'audio/webm';
+                } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                    options.mimeType = 'audio/mp4';
+                }
+
+                mediaRecorder = new MediaRecorder(stream, options);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = function(event) {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = function() {
+                    processRecording();
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                // 녹음 시작
+                mediaRecorder.start(1000);
+                isRecording = true;
+
+                // UI 업데이트
+                recordBtn.textContent = '⏹️';
+                recordBtn.classList.add('recording');
+                status.textContent = '녹음 중...';
+                status.classList.add('recording');
+                stopBtn.disabled = false;
+
+                startTimer();
+                showSuccess('녹음이 시작되었습니다!');
+
+            } catch (error) {
+                if (error.name === 'NotAllowedError') {
+                    showError('마이크 접근이 거부되었습니다. 브라우저에서 마이크 권한을 허용해주세요.');
+                } else if (error.name === 'NotFoundError') {
+                    showError('마이크를 찾을 수 없습니다. 마이크가 연결되어 있는지 확인해주세요.');
+                } else {
+                    showError('마이크 접근에 실패했습니다: ' + error.message);
+                }
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+
+                // UI 업데이트
+                recordBtn.textContent = '🎤';
+                recordBtn.classList.remove('recording');
+                status.textContent = '녹음 처리 중...';
+                status.classList.remove('recording');
+                stopBtn.disabled = true;
+
+                stopTimer();
+            }
+        }
+
+        function processRecording() {
+            if (audioChunks.length === 0) {
+                showError('녹음된 데이터가 없습니다.');
+                return;
+            }
+
+            try {
+                const audioBlob = new Blob(audioChunks, { 
+                    type: audioChunks[0].type || 'audio/webm' 
+                });
+                const audioUrl = URL.createObjectURL(audioBlob);
+
+                audioPlayer.src = audioUrl;
+                audioPlayer.style.display = 'block';
+                downloadBtn.style.display = 'block';
+                clearBtn.disabled = false;
+
+                status.textContent = '녹음 완료!';
+                showSuccess('녹음이 완료되었습니다! 재생하거나 다운로드하세요.');
+
+            } catch (error) {
+                showError('녹음 처리 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        function clearRecording() {
+            audioChunks = [];
+            audioPlayer.src = '';
+            audioPlayer.style.display = 'none';
+            downloadBtn.style.display = 'none';
+            timer.textContent = '00:00';
+            status.textContent = '녹음 시작하려면 버튼을 클릭하세요';
+            clearBtn.disabled = true;
+            hideMessages();
+        }
+
+        function downloadRecording() {
+            if (audioChunks.length === 0) {
+                showError('다운로드할 녹음 파일이 없습니다.');
+                return;
+            }
+
+            try {
+                const audioBlob = new Blob(audioChunks, { 
+                    type: audioChunks[0].type || 'audio/webm' 
+                });
+                const url = URL.createObjectURL(audioBlob);
+                const a = document.createElement('a');
+                
+                const now = new Date();
+                const dateStr = now.getFullYear() + 
+                    (now.getMonth() + 1).toString().padStart(2, '0') + 
+                    now.getDate().toString().padStart(2, '0') + '_' +
+                    now.getHours().toString().padStart(2, '0') + 
+                    now.getMinutes().toString().padStart(2, '0');
+                
+                a.href = url;
+                a.download = `음성녹음_${dateStr}.webm`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showSuccess('파일이 다운로드되었습니다!');
+
+            } catch (error) {
+                showError('다운로드 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 초기화 시 브라우저 지원 확인
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showError('이 브라우저는 음성 녹음을 지원하지 않습니다. Chrome, Firefox, Safari 등의 최신 브라우저를 사용해주세요.');
+                recordBtn.disabled = true;
+            } else if (!window.isSecureContext) {
+                showError('HTTPS 환경이 필요합니다. GitHub Pages에서 접속해주세요.');
+                recordBtn.disabled = true;
+            } else {
+                status.textContent = '준비 완료! 녹음을 시작하세요.';
+            }
+        });
+    </script>
+</body>
+</html>
