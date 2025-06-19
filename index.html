@@ -19,7 +19,7 @@
             padding: 50px;
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            max-width: 500px;
+            max-width: 600px;
             margin: 0 auto;
         }
         
@@ -92,6 +92,12 @@
             color: #006600;
         }
         
+        .info {
+            background: #eef7ff;
+            border: 1px solid #0099ff;
+            color: #0066cc;
+        }
+        
         .btn {
             background: #007bff;
             color: white;
@@ -101,15 +107,34 @@
             cursor: pointer;
             margin: 5px;
             font-size: 14px;
+            transition: all 0.2s ease;
         }
         
         .btn:hover:not(:disabled) {
             background: #0056b3;
+            transform: translateY(-1px);
         }
         
         .btn:disabled {
             background: #ccc;
             cursor: not-allowed;
+            transform: none;
+        }
+        
+        .save-btn {
+            background: #28a745;
+        }
+        
+        .save-btn:hover:not(:disabled) {
+            background: #218838;
+        }
+        
+        .list-btn {
+            background: #6f42c1;
+        }
+        
+        .list-btn:hover:not(:disabled) {
+            background: #5a32a3;
         }
         
         audio {
@@ -119,6 +144,79 @@
         
         .hidden {
             display: none;
+        }
+        
+        .recordings-list {
+            margin: 30px 0;
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .recording-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .recording-info {
+            flex: 1;
+        }
+        
+        .recording-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .recording-time {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .recording-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .mini-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .mini-btn:hover {
+            background: #0056b3;
+        }
+        
+        .mini-btn.delete {
+            background: #dc3545;
+        }
+        
+        .mini-btn.delete:hover {
+            background: #c82333;
+        }
+        
+        .storage-info {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #1565c0;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -137,17 +235,31 @@
         <div>
             <button id="stopBtn" class="btn" disabled>정지</button>
             <button id="clearBtn" class="btn" disabled>초기화</button>
+            <button id="listBtn" class="btn list-btn">저장된 녹음</button>
         </div>
         
         <audio id="audioPlayer" controls class="hidden"></audio>
         
-        <button id="downloadBtn" class="btn hidden">📥 다운로드</button>
+        <div>
+            <button id="downloadBtn" class="btn hidden">📥 다운로드</button>
+            <button id="saveBtn" class="btn save-btn hidden">💾 브라우저에 저장</button>
+        </div>
+        
+        <div class="storage-info" id="storageInfo">
+            💾 <strong>저장된 녹음:</strong> <span id="recordingCount">0</span>개
+        </div>
+        
+        <!-- 저장된 녹음 목록 -->
+        <div id="recordingsList" class="recordings-list hidden">
+            <h4>📂 저장된 음성 녹음들</h4>
+            <div id="recordingsContainer"></div>
+        </div>
     </div>
 
     <script>
         console.log('🎤 녹음기 시작');
         
-        // 전역 변수
+        // 전역 변수 (마이크 관련만)
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecording = false;
@@ -161,9 +273,14 @@
         const timer = document.getElementById('timer');
         const stopBtn = document.getElementById('stopBtn');
         const clearBtn = document.getElementById('clearBtn');
+        const listBtn = document.getElementById('listBtn');
         const audioPlayer = document.getElementById('audioPlayer');
         const downloadBtn = document.getElementById('downloadBtn');
+        const saveBtn = document.getElementById('saveBtn');
         const messages = document.getElementById('messages');
+        const recordingsList = document.getElementById('recordingsList');
+        const recordingsContainer = document.getElementById('recordingsContainer');
+        const recordingCount = document.getElementById('recordingCount');
 
         function showMessage(text, type = 'success') {
             console.log(`${type}: ${text}`);
@@ -195,7 +312,7 @@
             }
         }
 
-        // 녹음 시작/정지
+        // 녹음 시작/정지 (기존 작동하는 코드 그대로 유지)
         recordBtn.addEventListener('click', async function() {
             console.log('🎤 버튼 클릭!');
             
@@ -203,7 +320,7 @@
                 try {
                     console.log('마이크 요청 중...');
                     clearMessages();
-                    showMessage('마이크 권한을 요청하고 있습니다...', 'success');
+                    showMessage('마이크 권한을 요청하고 있습니다...', 'info');
                     
                     const stream = await navigator.mediaDevices.getUserMedia({ 
                         audio: true 
@@ -285,6 +402,7 @@
                 audioPlayer.src = audioUrl;
                 audioPlayer.classList.remove('hidden');
                 downloadBtn.classList.remove('hidden');
+                saveBtn.classList.remove('hidden');
                 clearBtn.disabled = false;
 
                 status.textContent = '녹음 완료!';
@@ -296,7 +414,7 @@
             }
         }
 
-        // 이벤트 리스너
+        // 기존 이벤트 리스너들 (마이크 관련)
         stopBtn.addEventListener('click', stopRecording);
 
         downloadBtn.addEventListener('click', function() {
@@ -329,6 +447,8 @@
             audioPlayer.src = '';
             audioPlayer.classList.add('hidden');
             downloadBtn.classList.add('hidden');
+            saveBtn.classList.add('hidden');
+            recordingsList.classList.add('hidden');
             timer.textContent = '00:00';
             status.textContent = '녹음 시작하려면 버튼을 클릭하세요';
             clearBtn.disabled = true;
@@ -336,9 +456,152 @@
             console.log('초기화 완료');
         });
 
+        // ===== 여기서부터 저장 기능 (간단한 방식) =====
+
+        // 브라우저에 저장 (간단한 localStorage 사용)
+        saveBtn.addEventListener('click', function() {
+            if (!currentAudioBlob) {
+                showMessage('❌ 저장할 파일이 없습니다!', 'error');
+                return;
+            }
+
+            try {
+                console.log('💾 브라우저에 저장 중...');
+                
+                // Blob을 Base64로 변환
+                const reader = new FileReader();
+                reader.onload = function() {
+                    const base64data = reader.result;
+                    const now = new Date();
+                    
+                    const recording = {
+                        id: now.getTime(),
+                        name: `음성녹음_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}`,
+                        date: now.toLocaleString('ko-KR'),
+                        duration: timer.textContent,
+                        size: currentAudioBlob.size,
+                        data: base64data
+                    };
+                    
+                    // localStorage에 저장
+                    const existingRecordings = JSON.parse(localStorage.getItem('voiceRecordings') || '[]');
+                    existingRecordings.push(recording);
+                    localStorage.setItem('voiceRecordings', JSON.stringify(existingRecordings));
+                    
+                    showMessage(`💾 저장 완료! (${recording.name})`, 'success');
+                    updateRecordingCount();
+                    console.log('저장 성공!');
+                };
+                
+                reader.readAsDataURL(currentAudioBlob);
+                
+            } catch (error) {
+                console.error('저장 오류:', error);
+                showMessage('❌ 저장 오류: ' + error.message, 'error');
+            }
+        });
+
+        // 저장된 녹음 목록 보기
+        listBtn.addEventListener('click', function() {
+            try {
+                const recordings = JSON.parse(localStorage.getItem('voiceRecordings') || '[]');
+                
+                recordingsContainer.innerHTML = '';
+                
+                if (recordings.length === 0) {
+                    recordingsContainer.innerHTML = '<div class="recording-item">📭 저장된 녹음이 없습니다.</div>';
+                } else {
+                    recordings.reverse().forEach(recording => {
+                        const div = document.createElement('div');
+                        div.className = 'recording-item';
+                        div.innerHTML = `
+                            <div class="recording-info">
+                                <div class="recording-name">🎵 ${recording.name}</div>
+                                <div class="recording-time">📅 ${recording.date} | ⏱️ ${recording.duration} | 📦 ${(recording.size / 1024).toFixed(1)}KB</div>
+                            </div>
+                            <div class="recording-actions">
+                                <button class="mini-btn" onclick="playRecording('${recording.id}')">▶️ 재생</button>
+                                <button class="mini-btn" onclick="downloadRecording('${recording.id}')">⬇️ 다운로드</button>
+                                <button class="mini-btn delete" onclick="deleteRecording('${recording.id}')">🗑️ 삭제</button>
+                            </div>
+                        `;
+                        recordingsContainer.appendChild(div);
+                    });
+                }
+                
+                recordingsList.classList.remove('hidden');
+                console.log('목록 로딩 완료:', recordings.length, '개');
+                
+            } catch (error) {
+                console.error('목록 오류:', error);
+                showMessage('❌ 목록 로딩 오류: ' + error.message, 'error');
+            }
+        });
+
+        // 글로벌 함수들
+        window.playRecording = function(id) {
+            try {
+                const recordings = JSON.parse(localStorage.getItem('voiceRecordings') || '[]');
+                const recording = recordings.find(r => r.id == id);
+                
+                if (recording) {
+                    audioPlayer.src = recording.data;
+                    audioPlayer.classList.remove('hidden');
+                    audioPlayer.play();
+                    showMessage(`▶️ 재생: ${recording.name}`, 'info');
+                }
+            } catch (error) {
+                showMessage('❌ 재생 오류: ' + error.message, 'error');
+            }
+        };
+
+        window.downloadRecording = function(id) {
+            try {
+                const recordings = JSON.parse(localStorage.getItem('voiceRecordings') || '[]');
+                const recording = recordings.find(r => r.id == id);
+                
+                if (recording) {
+                    const a = document.createElement('a');
+                    a.href = recording.data;
+                    a.download = `${recording.name}.webm`;
+                    a.click();
+                    showMessage(`📥 다운로드: ${recording.name}`, 'success');
+                }
+            } catch (error) {
+                showMessage('❌ 다운로드 오류: ' + error.message, 'error');
+            }
+        };
+
+        window.deleteRecording = function(id) {
+            if (confirm('정말 이 녹음을 삭제하시겠습니까?')) {
+                try {
+                    const recordings = JSON.parse(localStorage.getItem('voiceRecordings') || '[]');
+                    const filtered = recordings.filter(r => r.id != id);
+                    localStorage.setItem('voiceRecordings', JSON.stringify(filtered));
+                    
+                    showMessage('🗑️ 삭제 완료!', 'success');
+                    listBtn.click(); // 목록 새로고침
+                    updateRecordingCount();
+                } catch (error) {
+                    showMessage('❌ 삭제 오류: ' + error.message, 'error');
+                }
+            }
+        };
+
+        function updateRecordingCount() {
+            try {
+                const recordings = JSON.parse(localStorage.getItem('voiceRecordings') || '[]');
+                recordingCount.textContent = recordings.length;
+            } catch (error) {
+                recordingCount.textContent = '?';
+            }
+        }
+
         // 초기화
         window.addEventListener('load', function() {
             console.log('페이지 로드 완료');
+            
+            updateRecordingCount();
             
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                 showMessage('❌ 이 브라우저는 음성 녹음을 지원하지 않습니다!', 'error');
