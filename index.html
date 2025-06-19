@@ -3,50 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>테스트 음성 녹음기</title>
+    <title>음성 녹음기 - 저장 기능</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 50px;
-            background: #f0f0f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
         }
         
         .container {
-            background: white;
-            padding: 50px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            max-width: 500px;
-            margin: 0 auto;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
         }
         
         h1 {
             color: #333;
             margin-bottom: 30px;
+            font-size: 2.5em;
         }
         
         .record-btn {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             border: none;
-            background: #ff4444;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
             color: white;
-            font-size: 2em;
+            font-size: 3em;
             cursor: pointer;
             margin: 20px;
             transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .record-btn:hover {
-            background: #ff6666;
-            transform: scale(1.1);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(255, 107, 107, 0.4);
         }
         
         .record-btn.recording {
-            background: #44ff44;
-            animation: pulse 1s infinite;
+            background: linear-gradient(45deg, #ff4757, #ff3838);
+            animation: pulse 2s infinite;
         }
         
         @keyframes pulse {
@@ -56,64 +67,201 @@
         }
         
         .status {
-            font-size: 18px;
+            font-size: 1.2em;
             margin: 20px;
             color: #666;
+            min-height: 30px;
+        }
+        
+        .status.recording {
+            color: #ff4757;
+            font-weight: bold;
         }
         
         .timer {
-            font-size: 24px;
+            font-size: 2.5em;
             font-weight: bold;
             margin: 20px;
             color: #333;
+            font-family: 'Courier New', monospace;
         }
         
-        .error {
-            background: #ffeeee;
-            border: 1px solid #ff0000;
-            color: #cc0000;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-        }
-        
-        .success {
-            background: #eeffee;
-            border: 1px solid #00aa00;
-            color: #006600;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
+        .controls {
+            margin: 30px 0;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
         
         .btn {
-            background: #007bff;
+            background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 12px 24px;
+            border-radius: 25px;
             cursor: pointer;
-            margin: 5px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
         
-        .btn:hover {
-            background: #0056b3;
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
         }
         
         .btn:disabled {
-            background: #ccc;
+            opacity: 0.5;
             cursor: not-allowed;
+            transform: none;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .download-btn {
+            background: linear-gradient(45deg, #2ed573, #7bed9f);
+            box-shadow: 0 5px 15px rgba(46, 213, 115, 0.3);
+        }
+        
+        .save-btn {
+            background: linear-gradient(45deg, #3742fa, #5352ed);
+            box-shadow: 0 5px 15px rgba(55, 66, 250, 0.3);
+        }
+        
+        .download-btn:hover {
+            box-shadow: 0 8px 20px rgba(46, 213, 115, 0.4);
+        }
+        
+        .save-btn:hover {
+            box-shadow: 0 8px 20px rgba(55, 66, 250, 0.4);
+        }
+        
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        
+        .error {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .success {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid #28a745;
+            color: #155724;
+        }
+        
+        .info {
+            background: rgba(23, 162, 184, 0.1);
+            border: 1px solid #17a2b8;
+            color: #0c5460;
         }
         
         audio {
             width: 100%;
             margin: 20px 0;
         }
+        
+        .recording-list {
+            margin: 30px 0;
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(248, 249, 250, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .recording-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            margin: 10px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .recording-item:last-child {
+            border-bottom: none;
+        }
+        
+        .recording-info {
+            flex: 1;
+        }
+        
+        .recording-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 5px;
+        }
+        
+        .recording-details {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .recording-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .mini-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .mini-btn:hover {
+            background: #0056b3;
+            transform: translateY(-1px);
+        }
+        
+        .mini-btn.delete {
+            background: #dc3545;
+        }
+        
+        .mini-btn.delete:hover {
+            background: #c82333;
+        }
+        
+        .storage-stats {
+            background: rgba(23, 162, 184, 0.1);
+            border: 1px solid #17a2b8;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #0c5460;
+            font-size: 14px;
+        }
+        
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎤 테스트 음성 녹음기</h1>
+        <h1>🎤 음성 녹음기</h1>
         
         <div id="messages"></div>
         
@@ -123,24 +271,46 @@
         
         <div id="timer" class="timer">00:00</div>
         
-        <div>
+        <div class="controls">
             <button id="stopBtn" class="btn" disabled>정지</button>
             <button id="clearBtn" class="btn" disabled>초기화</button>
+            <button id="listBtn" class="btn">저장된 녹음</button>
         </div>
         
-        <audio id="audioPlayer" controls style="display: none;"></audio>
+        <audio id="audioPlayer" controls class="hidden"></audio>
         
-        <button id="downloadBtn" class="btn" style="display: none;">다운로드</button>
+        <div class="action-buttons">
+            <button id="downloadBtn" class="btn download-btn hidden">📥 파일 다운로드</button>
+            <button id="saveBtn" class="btn save-btn hidden">💾 브라우저에 저장</button>
+        </div>
+        
+        <div class="storage-stats" id="storageStats">
+            📊 저장 공간 확인 중...
+        </div>
+        
+        <!-- 저장된 녹음 목록 -->
+        <div id="recordingList" class="recording-list hidden">
+            <h4>📂 저장된 음성 녹음들</h4>
+            <div id="recordingItems"></div>
+        </div>
     </div>
 
     <script>
-        console.log('스크립트 시작!');
+        console.log('🎤 음성 녹음기 시작!');
         
+        // IndexedDB 설정
+        let db;
+        const DB_NAME = 'VoiceRecorderDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'recordings';
+
+        // 전역 변수들
         let mediaRecorder = null;
         let audioChunks = [];
         let isRecording = false;
         let startTime = 0;
         let timerInterval = null;
+        let currentAudioBlob = null;
 
         // DOM 요소들
         const recordBtn = document.getElementById('recordBtn');
@@ -148,13 +318,56 @@
         const timer = document.getElementById('timer');
         const stopBtn = document.getElementById('stopBtn');
         const clearBtn = document.getElementById('clearBtn');
+        const listBtn = document.getElementById('listBtn');
         const audioPlayer = document.getElementById('audioPlayer');
         const downloadBtn = document.getElementById('downloadBtn');
+        const saveBtn = document.getElementById('saveBtn');
         const messages = document.getElementById('messages');
+        const recordingList = document.getElementById('recordingList');
+        const recordingItems = document.getElementById('recordingItems');
+        const storageStats = document.getElementById('storageStats');
+
+        // IndexedDB 초기화
+        async function initDB() {
+            console.log('💾 IndexedDB 초기화 중...');
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+                
+                request.onerror = () => {
+                    console.error('❌ IndexedDB 오류:', request.error);
+                    reject(request.error);
+                };
+                
+                request.onsuccess = () => {
+                    db = request.result;
+                    console.log('✅ IndexedDB 연결 성공!');
+                    resolve(db);
+                };
+                
+                request.onupgradeneeded = (event) => {
+                    console.log('🔧 IndexedDB 업그레이드 중...');
+                    db = event.target.result;
+                    
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        const store = db.createObjectStore(STORE_NAME, { 
+                            keyPath: 'id', 
+                            autoIncrement: true 
+                        });
+                        store.createIndex('timestamp', 'timestamp', { unique: false });
+                        store.createIndex('name', 'name', { unique: false });
+                        console.log('📦 ObjectStore 생성 완료!');
+                    }
+                };
+            });
+        }
 
         function showMessage(message, type = 'success') {
             console.log(`${type}: ${message}`);
-            messages.innerHTML = `<div class="${type}">${message}</div>`;
+            messages.innerHTML = `<div class="message ${type}">${message}</div>`;
+        }
+
+        function hideMessages() {
+            messages.innerHTML = '';
         }
 
         function updateTimer() {
@@ -180,28 +393,44 @@
 
         // 녹음 시작/정지
         recordBtn.addEventListener('click', async function() {
-            console.log('녹음 버튼 클릭됨!');
+            console.log('🎤 녹음 버튼 클릭됨!');
             
             if (!isRecording) {
                 try {
-                    console.log('마이크 권한 요청 중...');
-                    showMessage('마이크 권한을 요청하고 있습니다...', 'success');
+                    console.log('🎙️ 마이크 권한 요청 중...');
+                    hideMessages();
                     
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    console.log('마이크 권한 획득 성공!');
+                    const stream = await navigator.mediaDevices.getUserMedia({ 
+                        audio: {
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            sampleRate: 44100
+                        }
+                    });
+                    console.log('✅ 마이크 권한 획득 성공!');
                     
-                    mediaRecorder = new MediaRecorder(stream);
+                    // MediaRecorder 설정
+                    const options = {};
+                    if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+                        options.mimeType = 'audio/webm;codecs=opus';
+                    } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                        options.mimeType = 'audio/webm';
+                    } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                        options.mimeType = 'audio/mp4';
+                    }
+                    
+                    mediaRecorder = new MediaRecorder(stream, options);
                     audioChunks = [];
                     
                     mediaRecorder.ondataavailable = function(event) {
-                        console.log('음성 데이터 수신:', event.data.size, 'bytes');
+                        console.log('🎵 음성 데이터 수신:', event.data.size, 'bytes');
                         if (event.data.size > 0) {
                             audioChunks.push(event.data);
                         }
                     };
                     
                     mediaRecorder.onstop = function() {
-                        console.log('녹음 정지됨, 총 청크:', audioChunks.length);
+                        console.log('⏹️ 녹음 정지됨, 총 청크:', audioChunks.length);
                         processRecording();
                         stream.getTracks().forEach(track => track.stop());
                     };
@@ -211,14 +440,15 @@
                     
                     recordBtn.textContent = '⏹️';
                     recordBtn.classList.add('recording');
-                    status.textContent = '녹음 중...';
+                    status.textContent = '🔴 녹음 중...';
+                    status.classList.add('recording');
                     stopBtn.disabled = false;
                     
                     startTimer();
-                    showMessage('녹음이 시작되었습니다!', 'success');
+                    showMessage('✅ 녹음이 시작되었습니다!', 'success');
                     
                 } catch (error) {
-                    console.error('마이크 오류:', error);
+                    console.error('❌ 마이크 오류:', error);
                     
                     if (error.name === 'NotAllowedError') {
                         showMessage('❌ 마이크 권한이 거부되었습니다! 브라우저에서 마이크 권한을 허용해주세요.', 'error');
@@ -237,13 +467,14 @@
 
         function stopRecording() {
             if (mediaRecorder && isRecording) {
-                console.log('녹음 정지 중...');
+                console.log('⏸️ 녹음 정지 중...');
                 mediaRecorder.stop();
                 isRecording = false;
                 
                 recordBtn.textContent = '🎤';
                 recordBtn.classList.remove('recording');
-                status.textContent = '녹음 처리 중...';
+                status.textContent = '⏳ 녹음 처리 중...';
+                status.classList.remove('recording');
                 stopBtn.disabled = true;
                 
                 stopTimer();
@@ -251,7 +482,7 @@
         }
 
         function processRecording() {
-            console.log('녹음 처리 시작, 청크 개수:', audioChunks.length);
+            console.log('🎵 녹음 처리 시작, 청크 개수:', audioChunks.length);
             
             if (audioChunks.length === 0) {
                 showMessage('❌ 녹음된 데이터가 없습니다!', 'error');
@@ -259,59 +490,282 @@
             }
 
             try {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                console.log('오디오 블롭 생성됨, 크기:', audioBlob.size, 'bytes');
+                currentAudioBlob = new Blob(audioChunks, { 
+                    type: audioChunks[0].type || 'audio/webm' 
+                });
+                console.log('✅ 오디오 블롭 생성됨, 크기:', currentAudioBlob.size, 'bytes');
                 
-                const audioUrl = URL.createObjectURL(audioBlob);
+                const audioUrl = URL.createObjectURL(currentAudioBlob);
                 audioPlayer.src = audioUrl;
-                audioPlayer.style.display = 'block';
-                downloadBtn.style.display = 'inline-block';
+                audioPlayer.classList.remove('hidden');
+                downloadBtn.classList.remove('hidden');
+                saveBtn.classList.remove('hidden');
                 clearBtn.disabled = false;
 
-                status.textContent = '녹음 완료!';
-                showMessage(`✅ 녹음 완료! 파일 크기: ${(audioBlob.size / 1024).toFixed(1)}KB`, 'success');
-
-                downloadBtn.onclick = function() {
-                    const a = document.createElement('a');
-                    a.href = audioUrl;
-                    a.download = `녹음_${new Date().getTime()}.webm`;
-                    a.click();
-                    showMessage('파일 다운로드됨!', 'success');
-                };
+                status.textContent = '✅ 녹음 완료!';
+                showMessage(`🎉 녹음 완료! 파일 크기: ${(currentAudioBlob.size / 1024).toFixed(1)}KB`, 'success');
 
             } catch (error) {
-                console.error('녹음 처리 오류:', error);
+                console.error('❌ 녹음 처리 오류:', error);
                 showMessage(`❌ 녹음 처리 오류: ${error.message}`, 'error');
             }
         }
 
+        // 다운로드
+        downloadBtn.addEventListener('click', function() {
+            if (!currentAudioBlob) {
+                showMessage('❌ 다운로드할 파일이 없습니다!', 'error');
+                return;
+            }
+
+            try {
+                const url = URL.createObjectURL(currentAudioBlob);
+                const a = document.createElement('a');
+                
+                const now = new Date();
+                const dateStr = now.getFullYear() + 
+                    (now.getMonth() + 1).toString().padStart(2, '0') + 
+                    now.getDate().toString().padStart(2, '0') + '_' +
+                    now.getHours().toString().padStart(2, '0') + 
+                    now.getMinutes().toString().padStart(2, '0') + 
+                    now.getSeconds().toString().padStart(2, '0');
+                
+                a.href = url;
+                a.download = `음성녹음_${dateStr}.webm`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showMessage('📥 파일이 다운로드되었습니다!', 'success');
+                console.log('📥 파일 다운로드 완료!');
+
+            } catch (error) {
+                console.error('❌ 다운로드 오류:', error);
+                showMessage(`❌ 다운로드 오류: ${error.message}`, 'error');
+            }
+        });
+
+        // 브라우저에 저장
+        saveBtn.addEventListener('click', async function() {
+            if (!currentAudioBlob) {
+                showMessage('❌ 저장할 파일이 없습니다!', 'error');
+                return;
+            }
+
+            if (!db) {
+                showMessage('❌ 데이터베이스가 준비되지 않았습니다!', 'error');
+                return;
+            }
+
+            try {
+                console.log('💾 브라우저에 저장 중...');
+                
+                const now = new Date();
+                const recording = {
+                    name: `음성녹음_${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${now.getHours().toString().padStart(2,'0')}${now.getMinutes().toString().padStart(2,'0')}${now.getSeconds().toString().padStart(2,'0')}`,
+                    timestamp: now.getTime(),
+                    dateString: now.toLocaleString('ko-KR'),
+                    size: currentAudioBlob.size,
+                    type: currentAudioBlob.type,
+                    duration: timer.textContent,
+                    data: currentAudioBlob
+                };
+
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const store = transaction.objectStore(STORE_NAME);
+                
+                await new Promise((resolve, reject) => {
+                    const request = store.add(recording);
+                    request.onsuccess = () => {
+                        console.log('✅ 저장 성공! ID:', request.result);
+                        resolve(request.result);
+                    };
+                    request.onerror = () => {
+                        console.error('❌ 저장 실패:', request.error);
+                        reject(request.error);
+                    };
+                });
+
+                showMessage(`💾 브라우저에 저장되었습니다! (${recording.name})`, 'success');
+                updateStorageStats();
+
+            } catch (error) {
+                console.error('❌ 저장 오류:', error);
+                showMessage(`❌ 저장 오류: ${error.message}`, 'error');
+            }
+        });
+
+        // 초기화
         clearBtn.addEventListener('click', function() {
+            console.log('🧹 녹음 초기화');
             audioChunks = [];
+            currentAudioBlob = null;
             audioPlayer.src = '';
-            audioPlayer.style.display = 'none';
-            downloadBtn.style.display = 'none';
+            audioPlayer.classList.add('hidden');
+            downloadBtn.classList.add('hidden');
+            saveBtn.classList.add('hidden');
+            recordingList.classList.add('hidden');
             timer.textContent = '00:00';
             status.textContent = '녹음 시작하려면 버튼을 클릭하세요';
             clearBtn.disabled = true;
-            messages.innerHTML = '';
-            console.log('녹음 초기화됨');
+            hideMessages();
         });
 
-        // 초기화 확인
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('페이지 로드 완료!');
-            
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                showMessage('❌ 이 브라우저는 음성 녹음을 지원하지 않습니다!', 'error');
-                recordBtn.disabled = true;
-            } else if (!window.isSecureContext) {
-                showMessage('❌ HTTPS 환경이 필요합니다!', 'error');
-                recordBtn.disabled = true;
-            } else {
-                showMessage('✅ 브라우저 지원 확인됨! 녹음 준비 완료!', 'success');
-                console.log('모든 기능 준비 완료!');
+        // 저장된 녹음 목록 보기
+        listBtn.addEventListener('click', showRecordingList);
+
+        async function showRecordingList() {
+            if (!db) {
+                showMessage('❌ 데이터베이스가 준비되지 않았습니다!', 'error');
+                return;
             }
-        });
-    </script>
-</body>
-</html>
+
+            try {
+                console.log('📂 저장된 녹음 목록 로딩...');
+                const recordings = await getAllRecordings();
+                
+                recordingItems.innerHTML = '';
+                
+                if (recordings.length === 0) {
+                    recordingItems.innerHTML = '<div class="recording-item">📭 저장된 녹음이 없습니다.</div>';
+                } else {
+                    recordings.sort((a, b) => b.timestamp - a.timestamp);
+                    
+                    recordings.forEach(recording => {
+                        const recordingDiv = document.createElement('div');
+                        recordingDiv.className = 'recording-item';
+                        
+                        recordingDiv.innerHTML = `
+                            <div class="recording-info">
+                                <div class="recording-name">🎵 ${recording.name}</div>
+                                <div class="recording-details">
+                                    📅 ${recording.dateString} | 
+                                    ⏱️ ${recording.duration} | 
+                                    📦 ${(recording.size / 1024).toFixed(1)}KB
+                                </div>
+                            </div>
+                            <div class="recording-actions">
+                                <button class="mini-btn" onclick="playRecording(${recording.id})">
+                                    ▶️ 재생
+                                </button>
+                                <button class="mini-btn" onclick="downloadSavedRecording(${recording.id})">
+                                    ⬇️ 다운로드
+                                </button>
+                                <button class="mini-btn delete" onclick="deleteRecording(${recording.id})">
+                                    🗑️ 삭제
+                                </button>
+                            </div>
+                        `;
+                        
+                        recordingItems.appendChild(recordingDiv);
+                    });
+                }
+                
+                recordingList.classList.remove('hidden');
+                console.log('✅ 녹음 목록 로딩 완료:', recordings.length, '개');
+                
+            } catch (error) {
+                console.error('❌ 목록 로딩 오류:', error);
+                showMessage(`❌ 목록 로딩 오류: ${error.message}`, 'error');
+            }
+        }
+
+        async function getAllRecordings() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.getAll();
+                
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // 글로벌 함수들 (HTML onclick에서 사용)
+        window.playRecording = async function(id) {
+            try {
+                console.log('▶️ 녹음 재생:', id);
+                const recording = await getRecording(id);
+                if (recording) {
+                    const url = URL.createObjectURL(recording.data);
+                    audioPlayer.src = url;
+                    audioPlayer.classList.remove('hidden');
+                    audioPlayer.play();
+                    showMessage(`▶️ 재생 중: ${recording.name}`, 'info');
+                }
+            } catch (error) {
+                console.error('❌ 재생 오류:', error);
+                showMessage(`❌ 재생 오류: ${error.message}`, 'error');
+            }
+        };
+
+        window.downloadSavedRecording = async function(id) {
+            try {
+                console.log('⬇️ 저장된 녹음 다운로드:', id);
+                const recording = await getRecording(id);
+                if (recording) {
+                    const url = URL.createObjectURL(recording.data);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${recording.name}.webm`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showMessage(`📥 다운로드: ${recording.name}`, 'success');
+                }
+            } catch (error) {
+                console.error('❌ 다운로드 오류:', error);
+                showMessage(`❌ 다운로드 오류: ${error.message}`, 'error');
+            }
+        };
+
+        window.deleteRecording = async function(id) {
+            if (confirm('정말 이 녹음을 삭제하시겠습니까?')) {
+                try {
+                    console.log('🗑️ 녹음 삭제:', id);
+                    const transaction = db.transaction([STORE_NAME], 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    
+                    await new Promise((resolve, reject) => {
+                        const request = store.delete(id);
+                        request.onsuccess = () => resolve();
+                        request.onerror = () => reject(request.error);
+                    });
+
+                    showMessage('🗑️ 녹음이 삭제되었습니다!', 'success');
+                    showRecordingList(); // 목록 새로고침
+                    updateStorageStats();
+
+                } catch (error) {
+                    console.error('❌ 삭제 오류:', error);
+                    showMessage(`❌ 삭제 오류: ${error.message}`, 'error');
+                }
+            }
+        };
+
+        async function getRecording(id) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const store = transaction.objectStore(STORE_NAME);
+                const request = store.get(id);
+                
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function updateStorageStats() {
+            try {
+                const recordings = await getAllRecordings();
+                const totalSize = recordings.reduce((sum, rec) => sum + rec.size, 0);
+                const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+                
+                // 브라우저 저장소 한도 추정
+                if ('storage' in navigator && 'estimate' in navigator.storage) {
+                    const estimate = await navigator.storage.estimate();
+                    const usedMB = (estimate.usage / (1024 * 1024)).toFixed(2);
+                    const quotaMB = (estimate.quota / (1024 * 1024)).toFixed(2);
+                    
+                
