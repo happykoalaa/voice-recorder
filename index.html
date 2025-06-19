@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>코알라 - 다문화 학생 상담 프로그램</title>
-    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&family=Gamja+Flower&family=Poor+Story&family=Cute+Font&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,7 +12,7 @@
         }
 
         body {
-            font-family: 'Gamja Flower', 'Cute Font', cursive;
+            font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #a8e6cf 0%, #dcedc1 50%, #ffd3a5 100%);
             min-height: 100vh;
             display: flex;
@@ -90,31 +89,23 @@
             color: #2d5016;
             font-size: 3em;
             margin-bottom: 10px;
-            font-weight: 700;
+            font-weight: bold;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-            font-family: 'Poor Story', cursive;
         }
 
         .program-title {
             color: #2d5016;
             font-size: 4.5em;
             margin-bottom: 20px;
-            font-weight: 700;
+            font-weight: bold;
             text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);
-            background: linear-gradient(45deg, #a8e6cf, #2d5016);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-family: 'Cute Font', cursive;
         }
 
         .subtitle {
             color: #5d4e75;
-            font-size: 1.6em;
+            font-size: 1.3em;
             margin-bottom: 30px;
             line-height: 1.6;
-            font-weight: 400;
-            font-family: 'Gamja Flower', cursive;
         }
 
         .koala-speech {
@@ -124,10 +115,8 @@
             padding: 20px;
             margin: 20px 0;
             position: relative;
-            font-size: 1.5em;
+            font-size: 1.4em;
             color: #2d5016;
-            font-weight: 400;
-            font-family: 'Poor Story', cursive;
             line-height: 1.5;
         }
 
@@ -172,9 +161,8 @@
 
         .language-name {
             font-size: 1.6em;
-            font-weight: 700;
+            font-weight: bold;
             color: #2d5016;
-            font-family: 'Poor Story', cursive;
         }
 
         /* 이름 선택 화면 */
@@ -208,9 +196,8 @@
         }
 
         .name-card .name {
-            font-size: 1.6em;
-            font-weight: 700;
-            font-family: 'Cute Font', cursive;
+            font-size: 1.5em;
+            font-weight: bold;
         }
 
         /* 기분 선택 화면 */
@@ -243,10 +230,9 @@
         }
 
         .mood-text {
-            font-size: 1.4em;
-            font-weight: 700;
+            font-size: 1.3em;
+            font-weight: bold;
             color: #2d5016;
-            font-family: 'Gamja Flower', cursive;
         }
 
         /* 녹음 화면 */
@@ -289,19 +275,17 @@
 
         .timer {
             font-size: 3em;
-            font-weight: 700;
+            font-weight: bold;
             color: #2d5016;
             margin: 20px 0;
-            font-family: 'Cute Font', cursive;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .status {
-            font-size: 1.7em;
+            font-size: 1.6em;
             margin: 20px 0;
             color: #2d5016;
-            font-weight: 500;
-            font-family: 'Poor Story', cursive;
+            font-weight: bold;
         }
 
         /* 버튼 스타일 */
@@ -309,12 +293,11 @@
             padding: 15px 35px;
             border: none;
             border-radius: 30px;
-            font-size: 1.5em;
+            font-size: 1.4em;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-weight: 700;
+            font-weight: bold;
             margin: 15px;
-            font-family: 'Gamja Flower', cursive;
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
 
@@ -362,8 +345,7 @@
             border-radius: 20px;
             margin-bottom: 30px;
             font-size: 1.8em;
-            font-weight: 700;
-            font-family: 'Poor Story', cursive;
+            font-weight: bold;
         }
 
         .session-list {
@@ -392,7 +374,7 @@
 
         .student-info {
             font-size: 1.4em;
-            font-weight: 700;
+            font-weight: bold;
             color: #2d5016;
         }
 
@@ -435,8 +417,7 @@
             border: none;
             padding: 12px 20px;
             border-radius: 25px;
-            font-family: 'Gamja Flower', cursive;
-            font-weight: 700;
+            font-weight: bold;
             cursor: pointer;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
@@ -509,7 +490,7 @@
             }
             
             .program-title {
-                font-size: 2.5em;
+                font-size: 3em;
             }
         }
     </style>
@@ -534,15 +515,15 @@
             <div class="language-grid">
                 <div class="language-card" onclick="selectLanguage('ko')">
                     <div class="flag">🇰🇷</div>
-                    <div class="language-name">한국어</div>
+                    <div class="language-name">🇰🇷 한국어</div>
                 </div>
                 <div class="language-card" onclick="selectLanguage('ru')">
                     <div class="flag">🇷🇺</div>
-                    <div class="language-name">Русский</div>
+                    <div class="language-name">🇷🇺 Русский</div>
                 </div>
                 <div class="language-card" onclick="selectLanguage('vi')">
                     <div class="flag">🇻🇳</div>
-                    <div class="language-name">Tiếng Việt</div>
+                    <div class="language-name">🇻🇳 Tiếng Việt</div>
                 </div>
             </div>
         </div>
@@ -687,7 +668,6 @@
                 this.isTeacherView = false;
                 
                 this.initializeElements();
-                this.updateKoalaSpeech();
             }
 
             initializeElements() {
@@ -770,6 +750,20 @@
                     this.isRecording = true;
                     this.recordingTime = 0;
                     
+                    this.updateRecordingUI();
+                    this.startTimer();
+                    
+                } catch (error) {
+                    console.error('마이크 접근 오류:', error);
+                    this.recordStatus.textContent = '마이크 접근이 거부되었습니다.';
+                }
+            }
+
+            stopRecording() {
+                if (this.mediaRecorder && this.isRecording) {
+                    this.mediaRecorder.stop();
+                    this.isRecording = false;
+                    this.stopTimer();
                     this.updateRecordingUI();
                 }
             }
@@ -1067,18 +1061,4 @@ ${index + 1}. ${session.name} (${this.getLanguageName(session.language)})
         }
     </script>
 </body>
-</html>();
-                    this.startTimer();
-                    
-                } catch (error) {
-                    console.error('마이크 접근 오류:', error);
-                    this.recordStatus.textContent = '마이크 접근이 거부되었습니다.';
-                }
-            }
-
-            stopRecording() {
-                if (this.mediaRecorder && this.isRecording) {
-                    this.mediaRecorder.stop();
-                    this.isRecording = false;
-                    this.stopTimer();
-                    this.updateRecordingUI
+</html>
